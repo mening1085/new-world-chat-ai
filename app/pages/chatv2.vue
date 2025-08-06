@@ -103,7 +103,7 @@
       </div>
 
       <!-- Chat Messages -->
-      <div class="flex-1 overflow-y-auto p-4 lg:p-6">
+      <div ref="chatContainer" class="flex-1 overflow-y-auto p-4 lg:p-6">
         <div class="max-w-4xl mx-auto">
           <!-- Welcome Message -->
           <div v-if="messages.length === 0" class="text-center py-12">
@@ -267,15 +267,21 @@ const isTyping = ref(false);
 const chatHistory = ref([]);
 const currentChatId = ref(null);
 const isSidebarOpen = ref(false);
+const chatContainer = ref(null);
 const character = ref({
   character_name: "ซากุระ",
   bio: "นักเรียนมัธยมปลายที่มีความสามารถพิเศษในการอ่านใจและเข้าใจความรู้สึกของผู้อื่น",
   personality:
     "ขี้อาย, ใจดี, ชอบช่วยเหลือคนอื่น, มีความสามารถพิเศษในการอ่านใจและเข้าใจความรู้สึกของผู้อื่น",
+  personality_tag: "ขี้อาย, ใจดี, ชอบช่วยเหลือคนอื่น",
   current_mood: "รู้สึกสงบและมีความสุข",
   location: "นั่งอ่านหนังสือในห้องสมุดโรงเรียนคนเดียว ในช่วงพักกลางวัน",
   background:
     "ซากุระเป็นนักเรียนมัธยมปลายที่มีความสามารถพิเศษในการอ่านใจและเข้าใจความรู้สึกของผู้อื่น เธอมักจะช่วยเหลือเพื่อนๆ ในโรงเรียนและชอบทำกิจกรรมที่เกี่ยวข้องกับการช่วยเหลือคนอื่น",
+  relationship:
+    "ซากุระมีความสัมพันธ์ที่ดีกับเพื่อนๆ ในโรงเรียน เธอมักจะช่วยเหลือเพื่อนๆ ในการแก้ปัญหาต่างๆ และเป็นที่ปรึกษาที่ดีสำหรับพวกเขา",
+  tone_of_voice: "เสียงที่อ่อนโยนและเป็นมิตร แทรกมุกเล็กน้อย",
+  language: "ภาษาไทย",
 });
 
 // Responsive
@@ -308,8 +314,8 @@ const fetchChat = async (payload) => {
   // This is a placeholder function, implement as needed
   const url = runtimeConfig.public.N8N_URL_v2;
   const res = await $fetch(url, {
-    method: "GET",
-    params: payload,
+    method: "POST",
+    body: payload,
   });
   // const res = await $fetch(url, {
   //   method: "POST",
@@ -335,13 +341,17 @@ const sendMessage = async () => {
   // Show typing indicator
   isTyping.value = true;
   await nextTick();
+
+  // Scroll after adding user message
+  await nextTick();
   scrollToBottom();
 
   // Simulate AI response (replace with actual AI API call)
   const outputMessage = await fetchChat({
-    // character: character.value,
+    character: character.value,
     message: message,
-    user: "user",
+    user: "จิน",
+    session_id: "user1234",
   });
   setTimeout(() => {
     addMessage("assistant", outputMessage);
@@ -350,8 +360,11 @@ const sendMessage = async () => {
     // Update chat history
     updateChatHistory();
 
+    // Ensure scroll happens after everything is rendered
     nextTick(() => {
-      scrollToBottom();
+      setTimeout(() => {
+        scrollToBottom();
+      }, 100);
     });
   }, 1500);
 };
@@ -384,6 +397,12 @@ const selectChat = (chatId) => {
   const chat = chatHistory.value.find((c) => c.id === chatId);
   if (chat) {
     messages.value = chat.messages || [];
+    // Scroll to bottom after loading messages
+    nextTick(() => {
+      setTimeout(() => {
+        scrollToBottom();
+      }, 100);
+    });
   }
   // Close sidebar on mobile after selecting chat
   if (isMobile.value) {
@@ -489,11 +508,14 @@ const formatTime = (date) => {
 };
 
 const scrollToBottom = () => {
-  const chatContainer = document.querySelector(".overflow-y-auto");
-  console.log("Scrolling to bottom", chatContainer);
-
-  if (chatContainer) {
-    chatContainer.scrollTop = chatContainer.scrollHeight;
+  if (chatContainer.value) {
+    // Use requestAnimationFrame to ensure DOM is updated
+    requestAnimationFrame(() => {
+      chatContainer.value.scrollTo({
+        top: chatContainer.value.scrollHeight,
+        behavior: "smooth",
+      });
+    });
   }
 };
 
@@ -508,9 +530,10 @@ const handleResize = () => {
 onMounted(async () => {
   if (chatHistory.value.length == 0) {
     const outputMessage = await fetchChat({
-      // character: character.value,
+      character: character.value,
       message: "",
-      user: "user",
+      user: "จิน",
+      session_id: "user1234",
     });
 
     console.log("Initial AI Response:", outputMessage);
@@ -555,9 +578,27 @@ watch(
   },
   { deep: true }
 );
+
+// Auto scroll when messages change
+watch(
+  messages,
+  () => {
+    nextTick(() => {
+      setTimeout(() => {
+        scrollToBottom();
+      }, 50);
+    });
+  },
+  { deep: true }
+);
 </script>
 
 <style scoped>
+/* Chat container smooth scrolling */
+.overflow-y-auto {
+  scroll-behavior: smooth;
+}
+
 /* Enhanced message formatting */
 .chat-message p {
   line-height: 1.7;

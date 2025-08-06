@@ -6,6 +6,13 @@ export default defineNuxtConfig({
   devServer: {
     port: 3005,
   },
+  runtimeConfig: {
+    public: {
+      n8nURL: process.env.N8N_URL,
+      N8N_HISTORY_URL: process.env.N8N_HISTORY_URL,
+      N8N_URL_v2: process.env.N8N_URL_v2,
+    },
+  },
   ui: {
     theme: {
       colors: [

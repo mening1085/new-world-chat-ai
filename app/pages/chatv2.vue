@@ -163,7 +163,7 @@
                       class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl rounded-bl-md px-3 py-2 sm:px-4 sm:py-3"
                     >
                       <div
-                        class="text-sm text-gray-900 dark:text-white"
+                        class="text-sm text-gray-900 dark:text-white message-content"
                         v-html="formatMessage(message.content)"
                       ></div>
                     </div>
@@ -267,6 +267,16 @@ const isTyping = ref(false);
 const chatHistory = ref([]);
 const currentChatId = ref(null);
 const isSidebarOpen = ref(false);
+const character = ref({
+  character_name: "ซากุระ",
+  bio: "นักเรียนมัธยมปลายที่มีความสามารถพิเศษในการอ่านใจและเข้าใจความรู้สึกของผู้อื่น",
+  personality:
+    "ขี้อาย, ใจดี, ชอบช่วยเหลือคนอื่น, มีความสามารถพิเศษในการอ่านใจและเข้าใจความรู้สึกของผู้อื่น",
+  current_mood: "รู้สึกสงบและมีความสุข",
+  location: "นั่งอ่านหนังสือในห้องสมุดโรงเรียนคนเดียว ในช่วงพักกลางวัน",
+  background:
+    "ซากุระเป็นนักเรียนมัธยมปลายที่มีความสามารถพิเศษในการอ่านใจและเข้าใจความรู้สึกของผู้อื่น เธอมักจะช่วยเหลือเพื่อนๆ ในโรงเรียนและชอบทำกิจกรรมที่เกี่ยวข้องกับการช่วยเหลือคนอื่น",
+});
 
 // Responsive
 const isMobile = computed(() => {
@@ -294,17 +304,23 @@ const closeSidebar = () => {
 };
 
 const fetchChat = async (payload) => {
-  const n8nURL = runtimeConfig.public.n8nURL;
-  const res = await $fetch(n8nURL, {
-    method: "POST",
-    body: payload,
+  // Fetch chat history from an API or local storage
+  // This is a placeholder function, implement as needed
+  const url = runtimeConfig.public.N8N_URL_v2;
+  const res = await $fetch(url, {
+    method: "GET",
+    params: payload,
   });
+  // const res = await $fetch(url, {
+  //   method: "POST",
+  //   body: payload,
+  // });
 
-  if (!res) {
+  if (!res || !res.output) {
     throw new Error("Failed to fetch chat response");
   }
 
-  return res;
+  return res.output;
 };
 
 // Message handling
@@ -323,12 +339,12 @@ const sendMessage = async () => {
 
   // Simulate AI response (replace with actual AI API call)
   const outputMessage = await fetchChat({
-    character_id: "cha_1",
+    // character: character.value,
     message: message,
-    session_id: "ses_123_cha_1_v_0",
+    user: "user",
   });
   setTimeout(() => {
-    addMessage("assistant", outputMessage.content);
+    addMessage("assistant", outputMessage);
     isTyping.value = false;
 
     // Update chat history
@@ -411,16 +427,49 @@ const updateChatHistory = () => {
 
 // Utility functions
 const formatMessage = (content) => {
-  // Simple markdown-like formatting
-  return content
+  // Enhanced formatting with better line breaks and spacing
+  let formatted = content
     .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.*?)\*/g, "<em>$1</em>")
     .replace(
       /`(.*?)`/g,
       '<code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-sm">$1</code>'
     )
-    .replace(/```([\s\S]*?)```/g, "<pre><code>$1</code></pre>")
-    .replace(/\n/g, "<br>");
+    .replace(/```([\s\S]*?)```/g, "<pre><code>$1</code></pre>");
+
+  // Handle line breaks with proper spacing
+  const lines = formatted.split("\n");
+  const paragraphs = [];
+  let currentParagraph = [];
+
+  lines.forEach((line, index) => {
+    if (line.trim() === "") {
+      // Empty line indicates paragraph break
+      if (currentParagraph.length > 0) {
+        paragraphs.push(currentParagraph.join("<br>"));
+        currentParagraph = [];
+      }
+    } else {
+      currentParagraph.push(line);
+    }
+  });
+
+  // Add the last paragraph if it exists
+  if (currentParagraph.length > 0) {
+    paragraphs.push(currentParagraph.join("<br>"));
+  }
+
+  // Wrap each paragraph in p tags with special class for poetic text
+  return paragraphs
+    .map((paragraph, index) => {
+      const marginClass = index === paragraphs.length - 1 ? "mb-0" : "mb-3";
+      const hasLineBreaks = paragraph.includes("<br>");
+      const poeticClass = hasLineBreaks ? "poetic-text" : "";
+      const isFirstParagraph = index === 0;
+      const firstClass = isFirstParagraph ? "first-paragraph" : "";
+      return `<p class="${marginClass} ${poeticClass} ${firstClass}">${paragraph}</p>`;
+    })
+    .join("");
 };
 
 const formatDate = (date) => {
@@ -457,40 +506,16 @@ const handleResize = () => {
 
 // Initialize
 onMounted(async () => {
-  const N8N_HISTORY_URL = runtimeConfig.public.N8N_HISTORY_URL;
-  const history = await $fetch(N8N_HISTORY_URL, {
-    method: "POST",
-    body: {
-      character_id: "cha_1",
-      message: "",
-      session_id: "ses_123_cha_1_v_0",
-    },
-  });
-
-  if (history.length > 0) {
-    messages.value = history.map((chat) => ({
-      id: chat.row_number,
-      role: chat.role,
-      content: chat.content,
-      timestamp:
-        new Date(chat.created_at).toISOString() === "Invalid Date"
-          ? new Date(chat.created_at.replace(/-/g, "/"))
-          : new Date(chat.created_at),
-    }));
-  }
-
-  console.log(history);
-
   if (chatHistory.value.length == 0) {
     const outputMessage = await fetchChat({
-      character_id: "cha_1",
+      // character: character.value,
       message: "",
-      session_id: "ses_123_cha_1_v_0",
+      user: "user",
     });
 
     console.log("Initial AI Response:", outputMessage);
 
-    await addMessage("assistant", outputMessage.content);
+    await addMessage("assistant", outputMessage);
 
     // Update chat history
     await updateChatHistory();
@@ -531,3 +556,117 @@ watch(
   { deep: true }
 );
 </script>
+
+<style scoped>
+/* Enhanced message formatting */
+.chat-message p {
+  line-height: 1.7;
+  margin-bottom: 0.75rem;
+  text-align: justify;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+.chat-message p:last-child {
+  margin-bottom: 0;
+}
+
+.chat-message p.mb-3 {
+  margin-bottom: 1rem;
+}
+
+.chat-message p.mb-0 {
+  margin-bottom: 0;
+}
+
+/* Special formatting for poetic text */
+.chat-message p.poetic-text {
+  line-height: 1.8;
+  font-style: italic;
+  color: #6b7280;
+  text-align: left;
+  padding: 0.5rem 0;
+}
+
+.chat-message p.poetic-text br {
+  display: block;
+  margin: 0.25rem 0;
+  content: "";
+}
+
+/* Dark mode adjustments for poetic text */
+.dark .chat-message p.poetic-text {
+  color: #9ca3af;
+}
+
+/* Message content styling */
+.message-content {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  hyphens: auto;
+}
+
+.message-content p {
+  margin: 0;
+}
+
+.message-content p:not(:last-child) {
+  margin-bottom: 0.75rem;
+}
+
+.message-content p.first-paragraph {
+  font-weight: 500;
+  color: #374151;
+}
+
+.dark .message-content p.first-paragraph {
+  color: #d1d5db;
+}
+
+/* Typing animation */
+.typing-dot {
+  animation: typing 1.4s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes typing {
+  0%,
+  80%,
+  100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Mobile full height fix */
+.mobile-full-height {
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* Sidebar transition */
+.sidebar-transition {
+  transition: transform 0.3s ease-in-out;
+}
+
+/* Message bubble enhancements */
+.chat-message .bg-white,
+.chat-message .bg-gray-800 {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.chat-message .bg-blue-600 {
+  box-shadow: 0 1px 3px rgba(59, 130, 246, 0.3);
+}
+</style>

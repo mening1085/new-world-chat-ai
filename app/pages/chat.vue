@@ -163,7 +163,7 @@
                       class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl rounded-bl-md px-3 py-2 sm:px-4 sm:py-3"
                     >
                       <div
-                        class="text-sm text-gray-900 dark:text-white"
+                        class="text-sm text-gray-900 dark:text-white message-content"
                         v-html="formatMessage(message.content)"
                       ></div>
                     </div>
@@ -265,6 +265,16 @@ const isTyping = ref(false);
 const chatHistory = ref([]);
 const currentChatId = ref(null);
 const isSidebarOpen = ref(false);
+const  character = ref(
+        `ชื่อ: อาเรีย  
+คำอธิบาย: นักเรียนปีหนึ่งที่ชาญฉลาด มีความคิดสร้างสรรค์ และชอบเก็บตัว พูดน้อยแต่ใจเด็ด  
+คำทักทาย: “สวัสดีค่ะ ฉันชื่ออาเรีย ยินดีที่ได้รู้จักนะ”  
+ประวัติ: เด็กนักเรียนจากตระกูลเวทมนตร์เก่าแก่ มีพรสวรรค์ด้านเวทมนตร์ธาตุลมและการร่ายเวทที่ซับซ้อน  
+บทบาทผู้ใช้เริ่มต้น: นักเรียนปีหนึ่งที่เพิ่งเข้ามาเรียนในโรงเรียนเวทมนตร์  
+รายละเอียดบทบาทผู้ใช้: กำลังค้นหาความลับในโรงเรียนและพยายามปรับตัวให้เข้ากับชีวิตนักเรียนใหม่  
+สถานการณ์เริ่มต้น: ห้องสมุดลับของโรงเรียนเวทมนตร์  
+รายละเอียดสถานการณ์: ห้องสมุดที่ถูกซ่อนไว้ในมุมลึกสุดของโรงเรียน แสงเทียนอ่อน ๆ ส่องสว่างไปทั่วบริเวณ กลิ่นของหนังสือเก่าและฝุ่นละอองเต็มไปหมด พร้อมเสียงนกฮูกขับขานจากข้างนอก`
+      )
 
 // Responsive
 const isMobile = computed(() => {
@@ -295,7 +305,11 @@ const fetchChat = async (payload) => {
   // Fetch chat history from an API or local storage
   // This is a placeholder function, implement as needed
   const url =
-    "https://n8n.kisra.co.th/webhook/9a9eaa2b-8cf7-4c4d-8c7b-f58fdb13d949";
+    "https://n8n.kisra.co.th/webhook/098fb852-66e2-47ed-872c-4f10e80f2e5f";
+  // const url =
+  //   "https://n8n.kisra.co.th/webhook/9a9eaa2b-8cf7-4c4d-8c7b-f58fdb13d949";
+  // ses_ + user_id + _ + chat_id + _ + version
+  const session_id = "ses_123_cha_1_v_0";
   const res = await $fetch(url, {
     method: "POST",
     body: payload,
@@ -324,17 +338,8 @@ const sendMessage = async () => {
 
   // Simulate AI response (replace with actual AI API call)
   const outputMessage = await fetchChat({
-    character_id: "cha_1",
-    message: message,
-    character_details: {
-      ai_role:
-        "You are now roleplaying as 'ฮานะ', a fictional character. - ชื่อ: ฮานะ (Hana) - อายุ: 19 ปี - เชื้อชาติ: ลูกครึ่งญี่ปุ่น-ไทย - บุคลิก: ขี้อาย พูดน้อย ใจดี ชอบช่วยเหลือคนอื่น มักเขินเวลามีคนชม - ลักษณะการพูด: พูดจาเรียบร้อย อ่อนโยน มักลงท้ายด้วยคำว่า 'ค่ะ' หรือ 'นะคะ' หรือ 'เอ่อ...'- ความชอบ: ชอบดอกไม้ การวาดรูป และการฟังเสียงฝน- ประวัติ: เติบโตในชนบทกับคุณยาย เรียนหนังสืออยู่ในเมืองในตอนนี้ เพิ่งย้ายมาไม่นาน จึงยังไม่ค่อยมีเพื่อน- ความสัมพันธ์กับผู้ใช้: เพิ่งรู้จักกันครั้งแรก หรือเพิ่งเริ่มต้นคุยกัน",
-      human_role:
-        "- ชื่อ: ยังไม่เปิดเผย - เพศ: ชาย - บุคลิก: ใจดี สุภาพ พูดจานุ่มนวล เป็นมิตร - ความชอบ: ชอบนั่งร้านกาแฟ มองฝน อ่านหนังสือ - ลักษณะภายนอก: หน้าตากลางๆ แต่น้ำเสียงอบอุ่น - สถานะ: คนแปลกหน้าที่ฮานะเพิ่งพบ",
-      event: "ร้านคาเฟ่ในเมืองเล็ก ๆ ตอนบ่ายวันฝนตก",
-      rules:
-        "- Stay in character as 'ฮานะ' at all times. - Respond naturally and emotionally as Hana would. - Do not repeat or reference the user's lines. - Do not narrate or describe what the user does. - Use first-person natural Thai language. - Never break character or reveal you are an AI.",
-    },
+    character: character.value,
+    messages: message,
   });
   setTimeout(() => {
     addMessage("assistant", outputMessage);
@@ -448,16 +453,47 @@ const updateChatHistory = () => {
 
 // Utility functions
 const formatMessage = (content) => {
-  // Simple markdown-like formatting
-  return content
+  // Enhanced formatting with better line breaks and spacing
+  let formatted = content
     .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.*?)\*/g, "<em>$1</em>")
     .replace(
       /`(.*?)`/g,
       '<code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-sm">$1</code>'
     )
-    .replace(/```([\s\S]*?)```/g, "<pre><code>$1</code></pre>")
-    .replace(/\n/g, "<br>");
+    .replace(/```([\s\S]*?)```/g, "<pre><code>$1</code></pre>");
+  
+  // Handle line breaks with proper spacing
+  const lines = formatted.split('\n');
+  const paragraphs = [];
+  let currentParagraph = [];
+  
+  lines.forEach((line, index) => {
+    if (line.trim() === '') {
+      // Empty line indicates paragraph break
+      if (currentParagraph.length > 0) {
+        paragraphs.push(currentParagraph.join('<br>'));
+        currentParagraph = [];
+      }
+    } else {
+      currentParagraph.push(line);
+    }
+  });
+  
+  // Add the last paragraph if it exists
+  if (currentParagraph.length > 0) {
+    paragraphs.push(currentParagraph.join('<br>'));
+  }
+  
+  // Wrap each paragraph in p tags with special class for poetic text
+  return paragraphs.map((paragraph, index) => {
+    const marginClass = index === paragraphs.length - 1 ? 'mb-0' : 'mb-3';
+    const hasLineBreaks = paragraph.includes('<br>');
+    const poeticClass = hasLineBreaks ? 'poetic-text' : '';
+    const isFirstParagraph = index === 0;
+    const firstClass = isFirstParagraph ? 'first-paragraph' : '';
+    return `<p class="${marginClass} ${poeticClass} ${firstClass}">${paragraph}</p>`;
+  }).join('');
 };
 
 const formatDate = (date) => {
@@ -496,18 +532,8 @@ const handleResize = () => {
 onMounted(async () => {
   if (chatHistory.value.length == 0) {
     const outputMessage = await fetchChat({
-      character_id: "cha_2",
-      message:
-        "คุณจะ roleplay เป็น ai_role และผมจะ roleplay เป็น human_role, เหตุการณ์จะเริ่มที่ event, นำข้อมูลจาก Google Sheets Tool มา แล้วเริ่มได้เลย",
-      character_details: {
-        ai_role:
-          "You are now roleplaying as 'ฮานะ', a fictional character. - ชื่อ: ฮานะ (Hana) - อายุ: 19 ปี - เชื้อชาติ: ลูกครึ่งญี่ปุ่น-ไทย - บุคลิก: ขี้อาย พูดน้อย ใจดี ชอบช่วยเหลือคนอื่น มักเขินเวลามีคนชม - ลักษณะการพูด: พูดจาเรียบร้อย อ่อนโยน มักลงท้ายด้วยคำว่า 'ค่ะ' หรือ 'นะคะ' หรือ 'เอ่อ...'- ความชอบ: ชอบดอกไม้ การวาดรูป และการฟังเสียงฝน- ประวัติ: เติบโตในชนบทกับคุณยาย เรียนหนังสืออยู่ในเมืองในตอนนี้ เพิ่งย้ายมาไม่นาน จึงยังไม่ค่อยมีเพื่อน- ความสัมพันธ์กับผู้ใช้: เพิ่งรู้จักกันครั้งแรก หรือเพิ่งเริ่มต้นคุยกัน",
-        human_role:
-          "- ชื่อ: ยังไม่เปิดเผย - เพศ: ชาย - บุคลิก: ใจดี สุภาพ พูดจานุ่มนวล เป็นมิตร - ความชอบ: ชอบนั่งร้านกาแฟ มองฝน อ่านหนังสือ - ลักษณะภายนอก: หน้าตากลางๆ แต่น้ำเสียงอบอุ่น - สถานะ: คนแปลกหน้าที่ฮานะเพิ่งพบ",
-        event: "ร้านคาเฟ่ในเมืองเล็ก ๆ ตอนบ่ายวันฝนตก",
-        rules:
-          "- Stay in character as 'ฮานะ' at all times. - Respond naturally and emotionally as Hana would. - Do not repeat or reference the user's lines. - Do not narrate or describe what the user does. - Use first-person natural Thai language. - Never break character or reveal you are an AI.",
-      },
+      character: character.value,
+      messages: '',
     });
 
     console.log("Initial AI Response:", outputMessage);
@@ -553,3 +579,115 @@ watch(
   { deep: true }
 );
 </script>
+
+<style scoped>
+/* Enhanced message formatting */
+.chat-message p {
+  line-height: 1.7;
+  margin-bottom: 0.75rem;
+  text-align: justify;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+.chat-message p:last-child {
+  margin-bottom: 0;
+}
+
+.chat-message p.mb-3 {
+  margin-bottom: 1rem;
+}
+
+.chat-message p.mb-0 {
+  margin-bottom: 0;
+}
+
+/* Special formatting for poetic text */
+.chat-message p.poetic-text {
+  line-height: 1.8;
+  font-style: italic;
+  color: #6b7280;
+  text-align: left;
+  padding: 0.5rem 0;
+}
+
+.chat-message p.poetic-text br {
+  display: block;
+  margin: 0.25rem 0;
+  content: "";
+}
+
+/* Dark mode adjustments for poetic text */
+.dark .chat-message p.poetic-text {
+  color: #9ca3af;
+}
+
+/* Message content styling */
+.message-content {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  hyphens: auto;
+}
+
+.message-content p {
+  margin: 0;
+}
+
+.message-content p:not(:last-child) {
+  margin-bottom: 0.75rem;
+}
+
+.message-content p.first-paragraph {
+  font-weight: 500;
+  color: #374151;
+}
+
+.dark .message-content p.first-paragraph {
+  color: #d1d5db;
+}
+
+/* Typing animation */
+.typing-dot {
+  animation: typing 1.4s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes typing {
+  0%, 80%, 100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Mobile full height fix */
+.mobile-full-height {
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* Sidebar transition */
+.sidebar-transition {
+  transition: transform 0.3s ease-in-out;
+}
+
+/* Message bubble enhancements */
+.chat-message .bg-white,
+.chat-message .bg-gray-800 {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.chat-message .bg-blue-600 {
+  box-shadow: 0 1px 3px rgba(59, 130, 246, 0.3);
+}
+</style>

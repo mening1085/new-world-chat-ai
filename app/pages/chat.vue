@@ -415,7 +415,8 @@ const selectChat = (chatId) => {
 const updateChatHistory = () => {
   if (messages.value.length === 0) return;
 
-  const firstUserMessage = messages.value.find((m) => m.role === "user");
+  // const firstUserMessage = messages.value.find((m) => m.role === "user");
+  const firstUserMessage = messages.value.length > 0 ? messages.value[0] : null;
   const title = firstUserMessage?.content.slice(0, 50) + "..." || "New Chat";
 
   if (currentChatId.value) {
@@ -511,7 +512,10 @@ onMounted(async () => {
 
     console.log("Initial AI Response:", outputMessage);
 
-    addMessage("assistant", outputMessage);
+    await addMessage("assistant", outputMessage);
+
+     // Update chat history
+    await updateChatHistory();
   }
   // Load chat history from localStorage if available
   const saved = localStorage.getItem("ai-chat-history");

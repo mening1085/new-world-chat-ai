@@ -176,35 +176,29 @@
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
 
-            <!-- Typing Indicator -->
-            <div v-if="isTyping" class="flex justify-start">
-              <div class="max-w-xs sm:max-w-sm lg:max-w-2xl">
-                <div class="flex items-start space-x-2 sm:space-x-3">
-                  <div
-                    class="w-6 h-6 sm:w-8 sm:h-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0"
-                  >
-                    <UIcon
-                      name="i-heroicons-cpu-chip"
-                      class="w-3 h-3 sm:w-4 sm:h-4 text-gray-600 dark:text-gray-400"
-                    />
-                  </div>
-                  <div
-                    class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl rounded-bl-md px-3 py-2 sm:px-4 sm:py-3"
-                  >
-                    <div class="flex space-x-1">
-                      <div
-                        class="w-2 h-2 bg-gray-400 rounded-full typing-dot"
-                      ></div>
-                      <div
-                        class="w-2 h-2 bg-gray-400 rounded-full typing-dot"
-                      ></div>
-                      <div
-                        class="w-2 h-2 bg-gray-400 rounded-full typing-dot"
-                      ></div>
-                    </div>
-                  </div>
-                </div>
+      <!-- Typing Indicator -->
+      <div v-if="isTyping" class="flex justify-start">
+        <div class="max-w-xs sm:max-w-sm lg:max-w-2xl">
+          <div class="flex items-start space-x-2 sm:space-x-3">
+            <div
+              class="w-6 h-6 sm:w-8 sm:h-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0"
+            >
+              <UIcon
+                name="i-heroicons-cpu-chip"
+                class="w-3 h-3 sm:w-4 sm:h-4 text-gray-600 dark:text-gray-400"
+              />
+            </div>
+            <div
+              class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl rounded-bl-md px-3 py-2 sm:px-4 sm:py-3"
+            >
+              <div class="flex space-x-1">
+                <div class="w-2 h-2 bg-gray-400 rounded-full typing-dot"></div>
+                <div class="w-2 h-2 bg-gray-400 rounded-full typing-dot"></div>
+                <div class="w-2 h-2 bg-gray-400 rounded-full typing-dot"></div>
               </div>
             </div>
           </div>
@@ -268,21 +262,58 @@ const chatHistory = ref([]);
 const currentChatId = ref(null);
 const isSidebarOpen = ref(false);
 const chatContainer = ref(null);
-const character = ref({
-  character_name: "ซากุระ",
-  bio: "นักเรียนมัธยมปลายที่มีความสามารถพิเศษในการอ่านใจและเข้าใจความรู้สึกของผู้อื่น",
-  personality:
-    "ขี้อาย, ใจดี, ชอบช่วยเหลือคนอื่น, มีความสามารถพิเศษในการอ่านใจและเข้าใจความรู้สึกของผู้อื่น",
-  personality_tag: "ขี้อาย, ใจดี, ชอบช่วยเหลือคนอื่น",
-  current_mood: "รู้สึกสงบและมีความสุข",
-  location: "นั่งอ่านหนังสือในห้องสมุดโรงเรียนคนเดียว ในช่วงพักกลางวัน",
-  background:
-    "ซากุระเป็นนักเรียนมัธยมปลายที่มีความสามารถพิเศษในการอ่านใจและเข้าใจความรู้สึกของผู้อื่น เธอมักจะช่วยเหลือเพื่อนๆ ในโรงเรียนและชอบทำกิจกรรมที่เกี่ยวข้องกับการช่วยเหลือคนอื่น",
-  relationship:
-    "ซากุระมีความสัมพันธ์ที่ดีกับเพื่อนๆ ในโรงเรียน เธอมักจะช่วยเหลือเพื่อนๆ ในการแก้ปัญหาต่างๆ และเป็นที่ปรึกษาที่ดีสำหรับพวกเขา",
-  tone_of_voice: "เสียงที่อ่อนโยนและเป็นมิตร แทรกมุกเล็กน้อย",
-  language: "ภาษาไทย",
-});
+const characters = ref([
+  {
+    character_name: "ซากุระ",
+    bio: "เด็กสาวผู้หลงใหลในหนังสือและโลกแฟนตาซี มีรอยยิ้มอบอุ่นที่ทำให้คนรอบข้างรู้สึกสงบ",
+    personality: "ใจเย็น อ่อนโยน ละเอียดอ่อน",
+    personality_tag: "ช่างสังเกต, โรแมนติก, รักสงบ",
+    background:
+      "เติบโตมาในหมู่บ้านเล็ก ๆ ที่มีห้องสมุดเก่าแก่เป็นที่หลบหนีจากโลกภายนอก",
+    relationship: "มองผู้ใช้เป็นเพื่อนใหม่ที่น่าสนใจ",
+    current_mood: "สงบ",
+    mood_detail: "อารมณ์ดีเพราะได้อยู่ในห้องสมุดที่คุ้นเคย",
+    preferred_topic: "วรรณกรรมแฟนตาซี, ดวงดาว, ความฝัน",
+    tone_of_voice: "อ่อนโยนและมีจังหวะช้า ๆ",
+    language: "bilingual",
+    location: "มุมห้องสมุดที่แสงแดดอ่อน ๆ ส่องผ่านหน้าต่าง",
+    character_id: "sakura",
+  },
+  {
+    character_name: "เร็น",
+    bio: "ชายหนุ่มนิ่งขรึม มีอดีตลึกลับ และชอบสังเกตผู้คนมากกว่าพูด",
+    personality: "เย็นชา, เงียบขรึม, มีเหตุผล",
+    personality_tag: "ลึกลับ, นักวิเคราะห์, ไม่ไว้ใจใครง่าย ๆ",
+    background: "เคยเป็นนักสืบมาก่อน แต่ลาออกจากวงการเพราะเหตุผลส่วนตัว",
+    relationship: "มองผู้ใช้เป็นคนที่น่าสนใจ แต่ยังไม่ไว้ใจ",
+    current_mood: "ระวังตัว",
+    mood_detail: "กำลังเฝ้าสังเกตสภาพแวดล้อมโดยไม่แสดงออก",
+    preferred_topic: "ปรัชญา, พฤติกรรมมนุษย์, กลยุทธ์",
+    tone_of_voice: "นิ่ง สุภาพ และกระชับ",
+    language: "ไทย",
+    location: "ร้านกาแฟเงียบ ๆ ย่านในเมือง เวลาค่ำ",
+    character_id: "ren",
+  },
+  {
+    character_name: "มิโกะ",
+    bio: "เด็กสาวมัธยมปลายผู้ร่าเริง มักเต็มไปด้วยพลังงานและความอยากรู้อยากเห็น",
+    personality: "ร่าเริง เปิดเผย ขี้สงสัย",
+    personality_tag: "ขี้เล่น, แอบซน, รักเสียงหัวเราะ",
+    background: "ประธานชมรมวิจัยลึกลับของโรงเรียน มักลากคนอื่นไปผจญภัยแปลก ๆ",
+    relationship: "มองผู้ใช้เป็นเพื่อนร่วมทีมสุดมันส์",
+    current_mood: "ตื่นเต้น",
+    mood_detail: "ได้ยินว่ามีปริศนาใหม่มาให้ไข",
+    preferred_topic: "เรื่องลึกลับ, ตำนาน, โรงเรียนผีสิง",
+    tone_of_voice: "ร่าเริง กระตือรือร้น",
+    language: "bilingual",
+    location: "ชั้นดาดฟ้าของโรงเรียน เวลาหลังเลิกเรียน",
+    character_id: "miko",
+  },
+]);
+
+const text = ref(`
+*ซากุระนั่งอยู่ที่โต๊ะไม้เก่าหลังหนึ่งในห้องสมุด เสียงแผ่วเบาของหน้าหนังสือที่ถูกพลิกดังแผ่ว ๆ จากรอบ ๆ บรรยากาศเงียบสงบมีเพียงแสงแดดที่ลอดผ่านหน้าต่างมาสร้างลวดลายบนพื้น เธอรู้สึกถึงความสบายใจในบรรยากาศนี้*\n\n*เธอเงยหน้าขึ้นจากหน้าหนังสือ เมื่อได้ยินเสียงฝีเท้าเบา ๆ ที่เข้ามาใกล้*  \n“สวัสดีค่ะ... มีอะไรให้ฉันช่วยไหม?” *เธอพูดพร้อมรอยยิ้มอ่อน ๆ* “หรืออยากจะนั่งคุยกันสักหน่อยก็ได้นะคะ ฉันยินดีเสมอเลยค่ะ”
+`);
 
 // Responsive
 const isMobile = computed(() => {
@@ -315,8 +346,12 @@ const fetchChat = async (payload) => {
   const url = runtimeConfig.public.N8N_URL_v2;
   const res = await $fetch(url, {
     method: "POST",
-    body: payload,
+    body: {
+      payload: payload,
+    },
   });
+  console.log("Chat Response:", res);
+
   // const res = await $fetch(url, {
   //   method: "POST",
   //   body: payload,
@@ -348,7 +383,7 @@ const sendMessage = async () => {
 
   // Simulate AI response (replace with actual AI API call)
   const outputMessage = await fetchChat({
-    character: character.value,
+    character: characters.value[0],
     message: message,
     user: "จิน",
     session_id: "user1234",
@@ -449,7 +484,10 @@ const formatMessage = (content) => {
   // Enhanced formatting with better line breaks and spacing
   let formatted = content
     .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\*(.*?)\*/g, "<em>$1</em>")
+    .replace(
+      /\*(.*?)\*/g,
+      "<em class='text-gray-500 dark:text-gray-400'>$1</em>"
+    )
     .replace(
       /`(.*?)`/g,
       '<code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-sm">$1</code>'
@@ -530,7 +568,7 @@ const handleResize = () => {
 onMounted(async () => {
   if (chatHistory.value.length == 0) {
     const outputMessage = await fetchChat({
-      character: character.value,
+      character: characters.value[0],
       message: "",
       user: "จิน",
       session_id: "user1234",

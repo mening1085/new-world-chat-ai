@@ -2,7 +2,7 @@
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
-  modules: ["@nuxt/ui", "@vueuse/nuxt", "@nuxtjs/google-fonts"],
+  modules: ["@nuxt/ui", "@vueuse/nuxt", "@nuxtjs/google-fonts", "@nuxt/icon"],
   devServer: {
     port: 3005,
   },

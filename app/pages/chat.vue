@@ -1,214 +1,52 @@
 <template>
-  <div class="flex h-screen mobile-full-height relative">
+  <div class="flex h-[calc(100vh-62px)] mobile-full-height relative">
     <!-- Mobile Backdrop -->
     <div
       v-if="isSidebarOpen"
-      class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+      class="fixed inset-0 bg-black opacity-75 z-40 lg:hidden"
       @click="closeSidebar"
     ></div>
 
     <!-- Sidebar -->
     <div
-      class="w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col fixed lg:relative inset-y-0 left-0 z-50 sidebar-transition"
+      class="w-80 bg-white dark:bg-zinc-800 border-r border-zinc-200 dark:border-zinc-700 flex flex-col fixed lg:relative inset-y-0 left-0 z-50 sidebar-transition"
       :class="{
         'translate-x-0': isSidebarOpen,
         '-translate-x-full lg:translate-x-0': !isSidebarOpen,
       }"
     >
       <!-- Header -->
-      <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-        <div class="flex items-center justify-between mb-4">
-          <h1 class="text-xl font-bold text-gray-900 dark:text-white">
-            Kuddy AI Chat
-          </h1>
-          <div class="flex items-center space-x-2">
-            <UButton
-              :icon="isDark ? 'i-heroicons-sun' : 'i-heroicons-moon'"
-              size="sm"
-              color="gray"
-              variant="ghost"
-              @click="toggleDark()"
-            />
-            <UButton
-              icon="i-heroicons-x-mark"
-              size="sm"
-              color="gray"
-              variant="ghost"
-              class="lg:hidden"
-              @click="closeSidebar"
-            />
-          </div>
-        </div>
-        <UButton
-          block
-          icon="i-heroicons-plus"
-          size="sm"
-          color="primary"
-          @click="startNewChat"
-        >
-          New Chat
-        </UButton>
-      </div>
+      <ChatHeader
+        :isDark="isDark"
+        @toggleDark="toggleDark"
+        @closeSidebar="closeSidebar"
+        @startNewChat="startNewChat"
+      />
 
       <!-- Chat History -->
-      <div class="flex-1 overflow-y-auto p-4">
-        <div class="space-y-2">
-          <div
-            v-for="chat in chatHistory"
-            :key="chat.id"
-            class="p-3 rounded-lg cursor-pointer transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
-            :class="{
-              'bg-gray-100 dark:bg-gray-700': chat.id === currentChatId,
-            }"
-            @click="selectChat(chat.id)"
-          >
-            <div
-              class="text-sm font-medium text-gray-900 dark:text-white truncate"
-            >
-              {{ chat.title }}
-            </div>
-            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              {{ formatDate(chat.updatedAt) }}
-            </div>
-          </div>
-        </div>
-      </div>
+      <ChatHistory
+        :chatHistory="chatHistory"
+        :current_session_key="current_session_key"
+        @selectChat="selectChat"
+      />
     </div>
 
     <!-- Main Chat Area -->
     <div class="flex-1 flex flex-col min-w-0">
       <!-- Mobile Header -->
-      <div
-        class="lg:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4"
-      >
-        <div class="flex items-center justify-between">
-          <UButton
-            icon="i-heroicons-bars-3"
-            size="sm"
-            color="gray"
-            variant="ghost"
-            @click="openSidebar"
-          />
-          <h1 class="text-lg font-semibold text-gray-900 dark:text-white">
-            Kuddy AI Chat
-          </h1>
-          <UButton
-            :icon="isDark ? 'i-heroicons-sun' : 'i-heroicons-moon'"
-            size="sm"
-            color="gray"
-            variant="ghost"
-            @click="toggleDark()"
-          />
-        </div>
-      </div>
+      <ChatMobileHeader
+        :isDark="isDark"
+        @openSidebar="openSidebar"
+        @toggleDark="toggleDark"
+      />
 
       <!-- Chat Messages -->
-      <div class="flex-1 overflow-y-auto p-4 lg:p-6">
-        <div class="max-w-4xl mx-auto">
-          <!-- Welcome Message -->
-          <div v-if="messages.length === 0" class="text-center py-12">
-            <div
-              class="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-4"
-            >
-              <UIcon
-                name="i-heroicons-chat-bubble-left-right"
-                class="w-8 h-8 text-blue-600 dark:text-blue-400"
-              />
-            </div>
-            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-              Welcome to Kuddy AI Chat
-            </h2>
-            <p class="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
-              Start a conversation with our AI assistant. Ask questions, get
-              help, or just chat!
-            </p>
-          </div>
-
-          <!-- Messages -->
-          <div v-else class="space-y-6">
-            <div
-              v-for="message in messages"
-              :key="message.id"
-              class="chat-message"
-            >
-              <!-- User Message -->
-              <div v-if="message.role === 'user'" class="flex justify-end">
-                <div class="max-w-xs sm:max-w-sm lg:max-w-2xl">
-                  <div
-                    class="bg-blue-600 text-white rounded-2xl rounded-br-md px-3 py-2 sm:px-4 sm:py-3"
-                  >
-                    <p class="text-sm">{{ message.content }}</p>
-                  </div>
-                  <div
-                    class="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right"
-                  >
-                    {{ formatTime(message.timestamp) }}
-                  </div>
-                </div>
-              </div>
-
-              <!-- AI Message -->
-              <div v-else class="flex justify-start">
-                <div class="max-w-xs sm:max-w-sm lg:max-w-2xl">
-                  <div class="flex items-start space-x-2 sm:space-x-3">
-                    <div
-                      class="w-6 h-6 sm:w-8 sm:h-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0"
-                    >
-                      <UIcon
-                        name="i-heroicons-cpu-chip"
-                        class="w-3 h-3 sm:w-4 sm:h-4 text-gray-600 dark:text-gray-400"
-                      />
-                    </div>
-                    <div
-                      class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl rounded-bl-md px-3 py-2 sm:px-4 sm:py-3"
-                    >
-                      <div
-                        class="text-sm text-gray-900 dark:text-white"
-                        v-html="formatMessage(message.content)"
-                      ></div>
-                    </div>
-                  </div>
-                  <div
-                    class="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-8 sm:ml-11"
-                  >
-                    {{ formatTime(message.timestamp) }}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Typing Indicator -->
-            <div v-if="isTyping" class="flex justify-start">
-              <div class="max-w-xs sm:max-w-sm lg:max-w-2xl">
-                <div class="flex items-start space-x-2 sm:space-x-3">
-                  <div
-                    class="w-6 h-6 sm:w-8 sm:h-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0"
-                  >
-                    <UIcon
-                      name="i-heroicons-cpu-chip"
-                      class="w-3 h-3 sm:w-4 sm:h-4 text-gray-600 dark:text-gray-400"
-                    />
-                  </div>
-                  <div
-                    class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl rounded-bl-md px-3 py-2 sm:px-4 sm:py-3"
-                  >
-                    <div class="flex space-x-1">
-                      <div
-                        class="w-2 h-2 bg-gray-400 rounded-full typing-dot"
-                      ></div>
-                      <div
-                        class="w-2 h-2 bg-gray-400 rounded-full typing-dot"
-                      ></div>
-                      <div
-                        class="w-2 h-2 bg-gray-400 rounded-full typing-dot"
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div ref="chatContainer" class="flex-1 overflow-y-auto p-4 lg:p-6">
+        <ChatMessage
+          :messages="messages"
+          :character_name="channel.character_name"
+          :isTyping="isTyping"
+        />
       </div>
 
       <!-- Input Area -->
@@ -226,7 +64,9 @@
                 :rows="1"
                 :maxrows="4"
                 autoresize
+                highlight
                 size="xl"
+                color="neutral"
                 :disabled="isTyping"
                 @keydown.enter.exact.prevent="sendMessage"
                 @keydown.enter.shift.exact="inputMessage += '\n'"
@@ -234,18 +74,20 @@
             </div>
             <UButton
               type="submit"
-              icon="i-heroicons-paper-airplane"
               :size="isMobile ? 'md' : 'lg'"
               color="primary"
               :disabled="!inputMessage.trim() || isTyping"
               :loading="isTyping"
               class="chat-button flex-shrink-0"
             >
+              <ClientOnly>
+                <Icon name="heroicons:paper-airplane" class="w-4 h-4" />
+              </ClientOnly>
               <span class="hidden sm:inline">Send</span>
             </UButton>
           </form>
           <div
-            class="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center"
+            class="text-xs text-zinc-500 dark:text-zinc-400 mt-2 text-center"
           >
             Press Enter to send, Shift+Enter for new line
           </div>
@@ -256,16 +98,26 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick, onMounted, onUnmounted } from "vue";
+import { ref, computed, nextTick, onMounted, onUnmounted, watch } from "vue";
 
 const runtimeConfig = useRuntimeConfig();
 
+// Template refs
+const chatContainer = ref(null);
+
 // State
+const channel = ref({
+  user_id: "bc8fd0be-0160-4b99-8d7c-8435282c6830",
+  character_id: "ac6284f7-32f2-4e0d-b55e-49a367df7a00",
+  user_name: "Gin",
+  character_name: "hana_v1",
+  version: "0",
+});
 const inputMessage = ref("");
 const messages = ref([]);
 const isTyping = ref(false);
 const chatHistory = ref([]);
-const currentChatId = ref(null);
+const current_session_key = ref("");
 const isSidebarOpen = ref(false);
 
 // Responsive
@@ -278,10 +130,10 @@ const isMobile = computed(() => {
 
 // Dark mode
 const colorMode = useColorMode();
-const isDark = computed(() => colorMode.value === "dark");
+const isDark = computed(() => colorMode.value == "dark");
 
 const toggleDark = () => {
-  colorMode.preference = colorMode.value === "dark" ? "light" : "dark";
+  colorMode.preference = colorMode.value == "dark" ? "light" : "dark";
 };
 
 // Sidebar management
@@ -300,7 +152,7 @@ const fetchChat = async (payload) => {
     body: payload,
   });
 
-  if (!res) {
+  if (!res || !res.content) {
     throw new Error("Failed to fetch chat response");
   }
 
@@ -313,7 +165,12 @@ const sendMessage = async () => {
   if (!message || isTyping.value) return;
 
   // Add user message
-  await addMessage("user", message);
+  await addMessage({
+    session_id: current_session_key.value,
+    role: "user",
+    content: message,
+    created_at: new Date(),
+  });
   inputMessage.value = "";
 
   // Show typing indicator
@@ -323,29 +180,38 @@ const sendMessage = async () => {
 
   // Simulate AI response (replace with actual AI API call)
   const outputMessage = await fetchChat({
-    character_id: "cha_1",
+    user_id: channel.value.user_id,
+    character_id: channel.value.character_id,
+    session_key: current_session_key.value,
     message: message,
-    session_id: "ses_123_cha_1_v_0",
   });
+  console.log(messages.value[messages.value.length - 1]);
+
+  // messages.value[messages.value.length - 1].session_id = outputMessage.session_id; // Update last user message
   setTimeout(() => {
-    addMessage("assistant", outputMessage.content);
+    addMessage({
+      session_id: outputMessage.session_id,
+      role: "assistant",
+      content: outputMessage.content,
+      created_at: outputMessage.created_at,
+    });
     isTyping.value = false;
 
     // Update chat history
-    updateChatHistory();
+    updateChatHistory(current_session_key.value);
 
     nextTick(() => {
       scrollToBottom();
     });
-  }, 1500);
+  }, 1000);
 };
 
-const addMessage = (role, content) => {
+const addMessage = ({ session_id, role, content, created_at }) => {
   const message = {
-    id: Date.now(),
+    session_id,
     role,
     content,
-    timestamp: new Date(),
+    created_at,
   };
   messages.value.push(message);
   return message;
@@ -354,18 +220,47 @@ const addMessage = (role, content) => {
 // Chat management
 const startNewChat = () => {
   messages.value = [];
-  currentChatId.value = null;
+  current_session_key.value = null;
   inputMessage.value = "";
   // Close sidebar on mobile after creating new chat
   if (isMobile.value) {
     closeSidebar();
   }
+
+  // ดึงบทสนทนาเริ่มต้นมาจาก AI
+  channel.value.version++;
+  const session_key = `ses_${channel.value.user_name}_${channel.value.character_name}_ver_${channel.value.version}`;
+  getFirstMessageConversation(session_key);
+  console.log("Starting new chat, fetching first message from AI...");
+};
+
+const getFirstMessageConversation = async (session_key) => {
+  const outputMessage = await fetchChat({
+    user_id: channel.value.user_id,
+    character_id: channel.value.character_id,
+    session_key: session_key,
+    message: "",
+  });
+
+  console.log("Initial AI Response:", outputMessage);
+
+  await addMessage({
+    session_id: outputMessage.session_id,
+    role: "assistant",
+    content: outputMessage.content,
+    created_at: outputMessage.created_at,
+  });
+
+  // Update chat history
+  await updateChatHistory(session_key);
 };
 
 const selectChat = (chatId) => {
-  currentChatId.value = chatId;
+  console.log("Selecting chat:", chatId);
+
+  current_session_key.value = chatId;
   // Load chat messages (implement based on your storage)
-  const chat = chatHistory.value.find((c) => c.id === chatId);
+  const chat = chatHistory.value.find((c) => c.session_key === chatId);
   if (chat) {
     messages.value = chat.messages || [];
   }
@@ -375,76 +270,45 @@ const selectChat = (chatId) => {
   }
 };
 
-const updateChatHistory = () => {
+const updateChatHistory = (session_key) => {
   if (messages.value.length === 0) return;
 
   // const firstUserMessage = messages.value.find((m) => m.role === "user");
   const firstUserMessage = messages.value.length > 0 ? messages.value[0] : null;
   const title = firstUserMessage?.content.slice(0, 50) + "..." || "New Chat";
 
-  if (currentChatId.value) {
+  if (current_session_key.value && current_session_key.value === session_key) {
     // Update existing chat
     const chatIndex = chatHistory.value.findIndex(
-      (c) => c.id === currentChatId.value
+      (c) => c.session_key === current_session_key.value
     );
     if (chatIndex !== -1) {
       chatHistory.value[chatIndex] = {
         ...chatHistory.value[chatIndex],
         title,
         messages: [...messages.value],
-        updatedAt: new Date(),
+        updated_at: new Date(),
       };
     }
   } else {
     // Create new chat
     const newChat = {
-      id: Date.now(),
+      session_key: session_key,
       title,
       messages: [...messages.value],
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      created_at: new Date(),
+      updated_at: new Date(),
     };
     chatHistory.value.unshift(newChat);
-    currentChatId.value = newChat.id;
+    current_session_key.value = newChat.session_key;
   }
 };
 
-// Utility functions
-const formatMessage = (content) => {
-  // Simple markdown-like formatting
-  return content
-    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\*(.*?)\*/g, "<em>$1</em>")
-    .replace(
-      /`(.*?)`/g,
-      '<code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-sm">$1</code>'
-    )
-    .replace(/```([\s\S]*?)```/g, "<pre><code>$1</code></pre>")
-    .replace(/\n/g, "<br>");
-};
-
-const formatDate = (date) => {
-  const now = new Date();
-  const diff = now - date;
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-  if (days === 0) return "Today";
-  if (days === 1) return "Yesterday";
-  if (days < 7) return `${days} days ago`;
-
-  return date.toLocaleDateString();
-};
-
-const formatTime = (date) => {
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-};
-
 const scrollToBottom = () => {
-  const chatContainer = document.querySelector(".overflow-y-auto");
-  console.log("Scrolling to bottom", chatContainer);
-
-  if (chatContainer) {
-    chatContainer.scrollTop = chatContainer.scrollHeight;
+  if (chatContainer.value) {
+    nextTick(() => {
+      chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+    });
   }
 };
 
@@ -457,60 +321,35 @@ const handleResize = () => {
 
 // Initialize
 onMounted(async () => {
-  const N8N_HISTORY_URL = runtimeConfig.public.N8N_HISTORY_URL;
-  const history = await $fetch(N8N_HISTORY_URL, {
-    method: "POST",
-    body: {
-      character_id: "cha_1",
-      message: "",
-      session_id: "ses_123_cha_1_v_0",
-    },
-  });
-
-  if (history.length > 0) {
-    messages.value = history.map((chat) => ({
-      id: chat.row_number,
-      role: chat.role,
-      content: chat.content,
-      timestamp:
-        new Date(chat.created_at).toISOString() === "Invalid Date"
-          ? new Date(chat.created_at.replace(/-/g, "/"))
-          : new Date(chat.created_at),
-    }));
-  }
-
-  console.log(history);
-
-  if (chatHistory.value.length == 0) {
-    const outputMessage = await fetchChat({
-      character_id: "cha_1",
-      message: "",
-      session_id: "ses_123_cha_1_v_0",
-    });
-
-    console.log("Initial AI Response:", outputMessage);
-
-    await addMessage("assistant", outputMessage.content);
-
-    // Update chat history
-    await updateChatHistory();
-  }
   // Load chat history from localStorage if available
   const saved = localStorage.getItem("ai-chat-history");
+
   if (saved) {
     try {
       chatHistory.value = JSON.parse(saved).map((chat) => ({
         ...chat,
-        createdAt: new Date(chat.createdAt),
-        updatedAt: new Date(chat.updatedAt),
+        created_at: chat.created_at ? new Date(chat.created_at) : null,
+        updated_at: chat.updated_at ? new Date(chat.updated_at) : null,
         messages: chat.messages.map((msg) => ({
           ...msg,
-          timestamp: new Date(msg.timestamp),
+          created_at: msg.created_at ? new Date(msg.created_at) : null,
         })),
       }));
+
+      // ถ้ามี chatHistory ให้เลือก chat แรก
+      if (chatHistory.value.length > 0) {
+        current_session_key.value = chatHistory.value[0].session_key;
+        messages.value = chatHistory.value[0].messages || [];
+        selectChat(current_session_key.value);
+      }
     } catch (e) {
       console.warn("Failed to load chat history:", e);
     }
+  } else {
+    console.log("No chat history found in localStorage.");
+
+    const session_key = `ses_${channel.value.user_name}_${channel.value.character_name}_ver_${channel.value.version}`;
+    // getFirstMessageConversation(session_key);
   }
 
   // Add window resize listener
@@ -527,6 +366,17 @@ watch(
   chatHistory,
   (newHistory) => {
     localStorage.setItem("ai-chat-history", JSON.stringify(newHistory));
+  },
+  { deep: true }
+);
+
+// Watch for messages changes to auto-scroll
+watch(
+  messages,
+  () => {
+    nextTick(() => {
+      scrollToBottom();
+    });
   },
   { deep: true }
 );

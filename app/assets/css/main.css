@@ -90,3 +90,7 @@ pre {
 .chat-button:hover {
   transform: translateY(-1px);
 }
+.title {
+  color: #f8d300;
+  text-shadow: 4px 0px 20px #020202;
+}

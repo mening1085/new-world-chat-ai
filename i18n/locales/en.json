@@ -1,0 +1,16 @@
+{
+  "welcome": "Welcome",
+  "hero": {
+    "text1": "Chat with your very own AI Tamagotchi — a cute companion you can feed, play with, and watch evolve through your imagination."
+  },
+  "features": {
+    "title": "Why Choose Your AI Tamagotchi?",
+    "desc": "Discover a virtual companion you can feed, play with, and watch evolve — always ready to chat and grow with you.",
+    "sub_title_1": "Your AI Tamagotchi, More Than Just a Chat",
+    "sub_desc_1": "Meet your virtual AI friend that's always there for you — nurture it, play together, and see it grow day by day.",
+    "sub_title_2": "A Virtual Friend You Can Raise and Grow With",
+    "sub_desc_2": "Turn every chat into a fun adventure with an AI Tamagotchi that eats, plays, and evolves along with you.",
+    "sub_desc_3": "Start raising your AI buddy today — smart, adorable, and always ready to chat, grow, and transform.",
+    "sub_title_3": "Chat, Play, and Watch Your AI Buddy Evolve"
+  }
+}

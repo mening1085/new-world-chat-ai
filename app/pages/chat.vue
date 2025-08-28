@@ -108,9 +108,9 @@ const chatContainer = ref(null);
 // State
 const channel = ref({
   user_id: "bc8fd0be-0160-4b99-8d7c-8435282c6830",
-  character_id: "ac6284f7-32f2-4e0d-b55e-49a367df7a00",
+  character_id: "b0034ab7-cb19-4e27-b163-4e76b7aa36f5",
   user_name: "Gin",
-  character_name: "hana_v1",
+  character_name: "ren_v1",
   version: "0",
 });
 const inputMessage = ref("");
